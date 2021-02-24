@@ -9,13 +9,13 @@ import bezier
 
 
 # Fit one (ore more) Bezier curves to a set of points
-def fitCurve(points, maxError):
+def fitCurve(points, maxError, parameters=None):
     leftTangent = normalize(points[1] - points[0])
     rightTangent = normalize(points[-2] - points[-1])
-    return fitCubic(points, leftTangent, rightTangent, maxError)
+    return fitCubic(points, leftTangent, rightTangent, maxError, parameters=parameters)
 
 
-def fitCubic(points, leftTangent, rightTangent, error):
+def fitCubic(points, leftTangent, rightTangent, error, parameters=None):
     # Use heuristic if region only has two points in it
     if (len(points) == 2):
         dist = linalg.norm(points[0] - points[1]) / 3.0
@@ -23,7 +23,11 @@ def fitCubic(points, leftTangent, rightTangent, error):
         return [bezCurve]
 
     # Parameterize points, and attempt to fit curve
-    u = chordLengthParameterize(points)
+    if parameters is not None:
+        assert len(parameters) == len(points)
+        u = parameters
+    else:
+        u = chordLengthParameterize(points)
     bezCurve = generateBezier(points, u, leftTangent, rightTangent)
     # Find max deviation of points to fitted curve
     maxError, splitPoint = computeMaxError(points, bezCurve, u)
